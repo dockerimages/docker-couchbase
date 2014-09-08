@@ -38,4 +38,4 @@ RUN chmod 755 /usr/local/sbin/couchbase
 # 7081 is 8091 with rewrites
 EXPOSE 7081 8092 11210
  
-CMD ["/usr/local/sbin/couchbase""]
+CMD ["/usr/local/sbin/couchbase"]
