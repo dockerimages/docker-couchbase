@@ -3,10 +3,15 @@ FROM ubuntu:14.10
 MAINTAINER Direkt SPEED Europe <frank@dspeed.eu> (irc://SP33D@freenode.org#docker)
 ENV LC_ALL C
 ENV DEBIAN_FRONTEND noninteractive
-RUN echo 'APT::Install-Recommends "0"; \n\
+RUN echo "# Adding Apt Magic" \
+ && echo 'APT::Install-Recommends "0"; \n\
 APT::Get::Assume-Yes "true"; \n\
 APT::Get::force-yes "true"; \n\
 APT::Install-Suggests "0";' > /etc/apt/apt.conf.d/01buildconfig \
+ && echo "deb mirror://mirrors.ubuntu.com/mirrors.txt trusty main restricted universe multiverse \n\
+deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-updates main restricted universe multiverse \n\
+deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-backports main restricted universe multiverse \n\
+deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-security main restricted universe multiverse" > /etc/apt/sources.list \
  && echo "# Limits" \
  && sed -i.bak '/\# End of file/ i\\# Following 4 lines added by couchbase-server' /etc/security/limits.conf \
  && sed -i.bak '/\# End of file/ i\\* hard memlock unlimited' /etc/security/limits.conf \
