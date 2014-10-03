@@ -1,4 +1,4 @@
-couchbase
+couchbase 3
 =========
 
 Couchbase Dockerfile
