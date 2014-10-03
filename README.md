@@ -17,10 +17,10 @@ Run local
 
 
 Run external
+
     mkdir ~/cbdata
     int=`ip route | awk '/^default/ { print $5 }'`
     addr=`ip route | egrep "^[0-9].*$int" | awk '{ print $9 }'`
-
 
     docker run -t -d \
         -e CB_REST_USER=user \
