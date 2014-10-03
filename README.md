@@ -17,17 +17,17 @@ Run local
 
 
 Run external
-
+    mkdir ~/cbdata
     int=`ip route | awk '/^default/ { print $5 }'`
     addr=`ip route | egrep "^[0-9].*$int" | awk '{ print $9 }'`
 
 
-    docker run -i -t -d \
+    docker run -t -d \
         -e CB_REST_USER=user \
         -e CB_REST_PASSWORD=password \
-        -e DOCKER_EXT_ADDR=yourip \
-        -name=COUCHBASE \
-        -v /home/user/data/couchbase:/opt/couchbase/var
+        -e DOCKER_EXT_ADDR=$addr \
+        --name=COUCHBASE \
+        -v /home/${USER}/cbdata/:/opt/couchbase/var \
         -p 11210:11210 -p 8091:7081 -p 8092:8092 \
         dockerimages/couchbase:3.0
         
