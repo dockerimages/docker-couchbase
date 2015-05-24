@@ -43,7 +43,7 @@ ADD http://cbfs-ext.hq.couchbase.com/dustin/software/confsed/confsed.lin64.gz /u
 RUN gzip -d /usr/local/sbin/confsed.gz
 RUN chmod 755 /usr/local/sbin/confsed
  
-ADD http://cbfs-ext.hq.couchbase.com/dustin/software/docker/cb/couchbase-script /usr/local/sbin/couchbase
+ADD couchbase /usr/local/sbin
 RUN chmod 755 /usr/local/sbin/couchbase
 
 # Open the OpenSSH server and Couchbase Server ports 7081 is 8091 with rewrites
