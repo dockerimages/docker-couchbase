@@ -1,11 +1,11 @@
-couchbase 3
+Couchbase 4
 =========
 
 Couchbase Dockerfile
 
 Build
 
-    docker build -t couchbase:3.0 git://github.com/dockerimages/couchbase 
+    docker build -t couchbase:4.0 git://github.com/dockerimages/couchbase 
 
 Run local
 
@@ -13,7 +13,7 @@ Run local
         -e CB_REST_USER=user \
         -e CB_REST_PASSWORD=password \
         -v /home/core/data/couchbase:/opt/couchbase/var
-        -name=COUCHBASE dockerimages/couchbase:3.0
+        -name=COUCHBASE dockerimages/couchbase:4.0
 
 
 Run external
@@ -37,7 +37,7 @@ Init Cluster via ambassadors or local cotnainers.
         --link COUCHBASE:alpha
         -e CB_REST_USER=user \
         -e CB_REST_PASSWORD=password \
-        -name=CB2 dockerimages/couchbase:3.0
+        -name=CB2 dockerimages/couchbase:4.0
         
 
 # note ambassadors 
@@ -46,4 +46,4 @@ Init Cluster via ambassadors or local cotnainers.
     --expose 11210 \
     -e CB_PORT_11210_TCP=tcp://192.168.1.52:11210 svendowideit/ambassador
     --link COUCHBASE:alpha
-    -name=cb2_ambassador dockerimages/couchbase:3.0
+    -name=cb2_ambassador dockerimages/couchbase:4.0
