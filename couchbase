@@ -1,45 +1,64 @@
 #!/bin/sh
- 
-untilsuccessful() {
-"$@"
-while [ $? -ne 0 ]
-do
-echo Retrying...
-sleep 1
-"$@"
-done
+
+# File: couchbase-script — Couchbase Server Docker startup script
+# based on work by Dustin Sallings: https://gist.github.com/dustin/6605182
+
+CB_ADMIN="Administrator"
+CB_ADMIN_PASSWORD="couchbase"
+CB_BUCKET="default"
+CB_CLI="/opt/couchbase/bin/couchbase-cli"
+CB_HOME="/opt/couchbase"
+CB_HOST="127.0.0.1"
+CB_USER="couchbase"
+CB_CONFIG_DIR="$CB_HOME/var/lib/couchbase/config"
+CB_DATA_DIR="$CB_HOME/var/lib/couchbase/data"
+CB_LIB_DIR="$CB_HOME/var/lib/couchbase"
+CB_STATS_DIR="$CB_HOME/var/lib/couchbase/stats"
+CB_LOG_DIR="$CB_HOME/var/lib/couchbase/logs"
+CB_MOXI_DIR="$CB_HOME/var/lib/moxi"
+CB_VAR_DIR="$CB_HOME/var"
+
+INT=`ip route | awk '/^default/ { print $5 }'`
+ADDR=`ip route | egrep "^[0-9].*$INT" | awk '{ print $9 }'`
+
+untilsuccess() {
+    "$@"
+    while [ $? -ne 0 ]
+    do
+	    echo Retrying...
+	    sleep 1
+        "$@"
+    done
 }
- 
-cd /opt/couchbase
-mkdir -p var/lib/couchbase var/lib/couchbase/config var/lib/couchbase/data \
-var/lib/couchbase/stats var/lib/couchbase/logs var/lib/moxi
-chown -R couchbase:couchbase var
+
+mkdir -p $CB_LIB_DIR $CB_CONFIG_DIR $CB_DATA_DIR $CB_LIB_DIR $CB_STATS_DIR \
+$CB_LOG_DIR $CB_MOXI_DIR
+chown -R $CB_USER:$CB_USER $CB_VAR_DIR
+
 /etc/init.d/couchbase-server start
- 
-int=`ip route | awk '/^default/ { print $5 }'`
-addr=`ip route | egrep "^[0-9].*$int" | awk '{ print $9 }'`
- 
+
 if [ -z "$DOCKER_EXT_ADDR" ]
 then
-DOCKER_EXT_ADDR="$addr"
+    DOCKER_EXT_ADDR="$ADDR"
 fi
- 
+
 if [ -n "$ALPHA_PORT_7081_TCP_ADDR" ]
 then
-echo "Joining cluster at $ALPHA_PORT_7081_TCP_ADDR"
-untilsuccessful /opt/couchbase/bin/couchbase-cli server-add -c $ALPHA_PORT_7081_TCP_ADDR:8091 \
---user=Administrator --password=password --server-add=$addr:8091
+    echo "Joining node $ALPHA_PORT_7081_TCP_ADDR"
+    untilsuccess $CB_CLI server-add -c $ALPHA_PORT_7081_TCP_ADDR:8091 \
+      --user=$CB_ADMIN --password=$CB_ADMIN_PASSWORD --server-add=$ADDR:8091
 else
-echo "Starting cluster"
-untilsuccessful /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091 \
---cluster-init-username=Administrator --cluster-init-password=password \
---cluster-init-ramsize=512
- 
-untilsuccessful /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 \
--u Administrator -p password --bucket=default -c localhost:8091 \
---bucket-ramsize=128
+    echo "Initializing the Couchbase Server cluster"
+
+    untilsuccess $CB_CLI cluster-init \
+      -c 127.0.0.1:8091 --cluster-init-username=$CB_ADMIN \
+      --cluster-init-password=$CB_ADMIN_PASSWORD --cluster-init-ramsize=512
+
+    untilsuccess $CB_CLI bucket-create -c $CB_HOST:8091 \
+      -u $CB_ADMIN -p $CB_ADMIN_PASSWORD --bucket=default -c $CB_HOST:8091 \
+      --bucket-ramsize=128
 fi
- 
-echo "{\"$addr\": \"$DOCKER_EXT_ADDR\", \"127.0.0.1\": \"$DOCKER_EXT_ADDR\"}" > /tmp/confsed.json
- 
-exec /usr/local/sbin/confsed -rewriteconf /tmp/confsed.json http://localhost:8091/
+
+echo "{\"$ADDR\": \"$DOCKER_EXT_ADDR\", \"$CB_HOST\": \"$DOCKER_EXT_ADDR\"}" > /tmp/confsed.json
+
+exec /usr/local/sbin/confsed -rewriteconf /tmp/confsed.json http://$CB_HOST:8091/
