@@ -1,6 +1,14 @@
 FROM ubuntu:14.10
 # Frank Base
 MAINTAINER Direkt SPEED Europe <frank@dspeed.eu> (irc://SP33D@freenode.org#docker)
+
+ENV CB_VERSION 3.0.1
+ENV CB_BASE_URL http://packages.couchbase.com/releases
+ENV CB_PACKAGE couchbase-server-community_${CB_VERSION}-ubuntu12.04_amd64.deb
+ENV CB_DOWNLOAD_URL ${CB_BASE_URL}/${CB_VERSION}/${CB_PACKAGE}
+ENV CB_LOCAL_PATH /tmp/${CB_PACKAGE}
+ENV CB_REST_USERNAME access
+
 ENV LC_ALL C
 ENV DEBIAN_FRONTEND noninteractive
 RUN echo "# Adding Apt Magic" \
@@ -22,9 +30,12 @@ deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-security main restricted univ
  && sed -i.bak '/\# end of pam-auth-update config/ i\session required pam_limits.so\n' /etc/pam.d/common-session \
  && apt-get update \
  && apt-get install -y librtmp0 python-httplib2
-ADD http://packages.couchbase.com/releases/3.0.0-beta2/couchbase-server_3.0.0-beta2_x86_64_ubuntu_1204.deb /tmp/couchbase-server_3.0.0-beta2_x86_64_ubuntu_1204.deb
-RUN dpkg -i /tmp/couchbase-server_3.0.0-beta2_x86_64_ubuntu_1204.deb
-RUN rm /tmp/couchbase-server_3.0.0-beta2_x86_64_ubuntu_1204.deb
+ 
+ # Download Couchbase Server package to /tmp & install
+ADD $CB_DOWNLOAD_URL $CB_LOCAL_PATH
+RUN dpkg -i $CB_LOCAL_PATH
+
+RUN rm $CB_DOWNLOAD_URL $CB_LOCAL_PATH
 RUN /etc/init.d/couchbase-server stop
 RUN rm -r /opt/couchbase/var/lib
  
@@ -35,8 +46,7 @@ RUN chmod 755 /usr/local/sbin/confsed
 ADD http://cbfs-ext.hq.couchbase.com/dustin/software/docker/cb/couchbase-script /usr/local/sbin/couchbase
 RUN chmod 755 /usr/local/sbin/couchbase
 
-ENV CB_REST_USERNAME access
-# 7081 is 8091 with rewrites
-EXPOSE 7081 8092 11210
+# Open the OpenSSH server and Couchbase Server ports 7081 is 8091 with rewrites
+EXPOSE 7081 4369 8091 8092 11209 11210 11211
  
 CMD ["/usr/local/sbin/couchbase"]
