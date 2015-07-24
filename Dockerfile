@@ -4,7 +4,7 @@ ENV LC_ALL C
 ENV DEBIAN_FRONTEND noninteractive
 
 ENV CB_REST_USERNAME access
-ENV CB_VERSION 3.0.3
+ENV CB_VERSION 3.0.2
 ENV CB_BASE_URL http://packages.couchbase.com/releases
 ENV CB_PACKAGE couchbase-server-community_${CB_VERSION}-ubuntu12.04_amd64.deb
 ENV CB_DOWNLOAD_URL ${CB_BASE_URL}/${CB_VERSION}/${CB_PACKAGE}
