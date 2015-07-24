@@ -1,4 +1,4 @@
-FROM ubuntu:15.10
+FROM ubuntu:15.04
 MAINTAINER DIREKTSPEED LTD <frank@dspeed.eu> (irc://SP33D@freenode.org#docker)
 ENV LC_ALL C
 ENV DEBIAN_FRONTEND noninteractive
